@@ -15,3 +15,14 @@ Route::get('/', function()
 {
 	return View::make('hello');
 });
+
+Route::group(array('prefix' => 'api',
+		   'before' => 'auth'),
+	     function() {
+
+	Route::post('join',
+		    array('as' => 'join-game',
+			  'uses' => 'GameController@joinGame'));
+
+
+});
