@@ -9,20 +9,24 @@
 | It's a breeze. Simply tell Laravel the URIs it should respond to
 | and give it the Closure to execute when that URI is requested.
 |
-*/
+ */
 
 Route::get('/', function()
-{
-	return View::make('hello');
-});
+           {
+        return View::make('hello');
+    });
 
 Route::group(array('prefix' => 'api',
-		   'before' => 'auth'),
-	     function() {
+                   'before' => 'secretKey'),
+             function() {
 
-	Route::post('join',
-		    array('as' => 'join-game',
-			  'uses' => 'GameController@joinGame'));
+        Route::post('join',
+                    array('as' => 'join-game',
+                          'uses' => 'GameController@joinGame'));
+
+        Route::post('info',
+                    array('as' => 'game-info',
+                          'uses' => 'GameController@getGameInfo'));
 
 
-});
+    });
