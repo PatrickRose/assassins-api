@@ -67,6 +67,36 @@ class GameController extends Controller {
         );
     }
 
+    public function getEvents() {
+        $game = Game::find(Input::get('gameID'));
+        if (!$game) {
+            return Response::json(
+                array(
+                    'error' => true,
+                    'problem' => "Game not found"
+                ),
+                400
+            );
+        }
+        if ($game->started) {
+            $events = $game->events->orderBy('createdAt', 'desc')->take(5)->get();
+            return Response::json(
+                array(
+                    'error' => false,
+                    'events' => $events->toArray()
+                ),
+                200
+            );
+        }
+        return Response::json(
+            array(
+                'error' => true
+                'problem' => "Game not yet started"
+            )
+        );
+
+    }
+
     public function getGameInfo() {
         $game = Game::find(Input::get('gameID'));
         if (!$game) {
@@ -90,7 +120,7 @@ class GameController extends Controller {
             }
             $target = $player->findTarget()->toArray();
             $target['picture'] = asset($game->id . '/' . $target->id . 'jpg');
-	    $target = $target->id == $player->id ? false : $target;
+            $target = $target->id == $player->id ? false : $target;
             return Response::json(
                 array(
                     'error' => false,
@@ -105,6 +135,72 @@ class GameController extends Controller {
                 'game' => $game->toArray()
             )
         );
+    }
+
+    public function submitReport() {
+        $game = Game::find(Input::get('gameID'));
+        if (!$game) {
+            return Response::json(
+                array(
+                    'error' => true,
+                    'problem' => "Game not found"
+                ),
+                404
+            );
+        }
+        if (Input::has('death')) {
+            $kill = Kill::where('killed', Input::get('player'));
+            if (!$kill) {
+                return Response::json(
+                    array(
+                        'error' => true,
+                        'problem' => "Kill report not found"
+                    ),
+                    404
+                );
+            }
+            $kill->confirmed = true;
+            $kill->save();
+            $player = Player::find(Input::get('player'));
+            $player->alive = false;
+            $player->save();
+            return Response::json(
+                array(
+                    'error' => false,
+                    'kill' => $kill->toArray()
+                ),
+                200
+            );
+        }
+        if (Input::has('kill')) {
+            $kill = new Kill();
+            $kill->killer = Input::get('killer');
+            $kill->killed = Input::get('killed');
+            $kill->confirmed = false;
+            if ($kill->save()) {
+                return Response::json(
+                    array(
+                        'error' => false,
+                        'kill' => $kill->toArray()
+                    ),
+                    200
+                );
+            }
+            return Response::json(
+                array(
+                    'error' => true,
+                    'problem' => "Couldn't save to database"
+                ),
+                200
+            );
+        }
+        return Response::json(
+            array(
+                'error' => true,
+                'problem' => "Didn't specify if it was a kill or death report"
+            ),
+            400
+        }
     }
 
 }

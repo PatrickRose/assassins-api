@@ -21,12 +21,16 @@ Route::group(array('prefix' => 'api',
              function() {
 
         Route::post('join',
-                    array('as' => 'join-game',
-                          'uses' => 'GameController@joinGame'));
+                    array('uses' => 'GameController@joinGame'));
 
         Route::post('info',
-                    array('as' => 'game-info',
-                          'uses' => 'GameController@getGameInfo'));
+                    array('uses' => 'GameController@getGameInfo'));
+
+        Route::post('submitReport',
+                    array('uses' => 'GameController@submitReport'));
+
+	Route::post('getEvents',
+		    array('uses' => 'GameController@getEvents'));
 
 
     });
