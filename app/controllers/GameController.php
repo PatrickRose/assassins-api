@@ -34,7 +34,18 @@ class GameController extends Controller {
         $player->allergies = Input::get('allergies');
         $player->water = Input::get('water');
         $player->gameID = $game->id;
-        if (!Input::hasFile('photo')) {
+        $validator = Validator::make($player->toArray(), $player::$rules);
+        if ($validator->fails()) {
+            return Response::json(
+                array(
+                    'error' => true,
+		    'problem' => "Validation did not pass",
+                    'errors' => $validator->messages()->toArray()
+                ),
+                400
+            );
+        }
+        if (Input::hasFile('photo')) {
             if ($player->save()) {
                 $file = Input::file('photo');
                 $destination = 'public/' . $game->id;
