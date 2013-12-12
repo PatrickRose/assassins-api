@@ -90,7 +90,7 @@ class GameController extends Controller {
         }
         return Response::json(
             array(
-                'error' => true
+                'error' => true,
                 'problem' => "Game not yet started"
             )
         );
@@ -131,7 +131,7 @@ class GameController extends Controller {
         }
         return Response::json(
             array(
-                'error' => false
+                'error' => false,
                 'game' => $game->toArray()
             )
         );
@@ -200,9 +200,8 @@ class GameController extends Controller {
                 'problem' => "Didn't specify if it was a kill or death report"
             ),
             400
-        }
+        );
     }
-
 }
 
 ?>

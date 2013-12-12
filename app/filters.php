@@ -48,7 +48,13 @@ Route::filter('auth.basic', function()
 
 Route::filter('secretKey', function() {
     if (Input::get('secret') != Config::get('app.key')) {
-        App::abort(401, 'You are not authorized.');
+        return Response::json(
+            array(
+                'error' => true,
+                'problem' => "You didn't pass in the correct secret key"
+            ),
+            401
+        );
     }
 });
 
