@@ -13,24 +13,29 @@
 
 Route::get('/', function()
            {
-        return View::make('hello');
-    });
+    return View::make('hello');
+  });
 
 Route::group(array('prefix' => 'api',
                    'before' => 'secretKey'),
              function() {
 
-        Route::post('join',
-                    array('uses' => 'GameController@joinGame'));
+    Route::post('join',
+                array('uses' => 'GameController@joinGame'));
 
-        Route::post('info',
-                    array('uses' => 'GameController@getGameInfo'));
+    Route::post('info',
+                array('uses' => 'GameController@getGameInfo'));
 
-        Route::post('submitReport',
-                    array('uses' => 'GameController@submitReport'));
+    Route::post('submitReport',
+                array('uses' => 'GameController@submitReport'));
 
-	Route::post('getEvents',
-		    array('uses' => 'GameController@getEvents'));
+    Route::post('getEvents',
+                array('uses' => 'GameController@getEvents'));
 
+    Route::post('login',
+		array('uses' => 'PlayerController@login'));
 
-    });
+    Route::post('getAllGames',
+		array('uses' => 'GameController@getAll'));
+
+  });
