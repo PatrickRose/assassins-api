@@ -15,6 +15,7 @@ class Player extends Eloquent {
     'allergies'  => 'required',
     'water'      => 'required',
     'gameID'     => 'required',
+    'address'    => 'required'
   );
 
   public function user() {
@@ -22,7 +23,7 @@ class Player extends Eloquent {
   }
 
   public function game() {
-    return $this->belongsTo('Game');
+    return $this->belongsTo('Game', 'gameID');
   }
 
 }

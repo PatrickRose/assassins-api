@@ -16,6 +16,11 @@ Route::get('/', function()
     return View::make('hello');
   });
 
+Route::model('game', 'Game');
+
+Route::get('start/{game}',
+	   array('uses' => 'GameController@startGame'));
+
 Route::group(array('prefix' => 'api',
                    'before' => 'secretKey'),
              function() {

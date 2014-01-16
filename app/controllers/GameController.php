@@ -33,6 +33,7 @@ class GameController extends Controller {
     $player->year = Input::get('year');
     $player->allergies = Input::get('allergies');
     $player->water = Input::get('water');
+    $player->address = Input::get('address');
     $player->gameID = $game->id;
     $validator = Validator::make($player->toArray(), $player::$rules);
     if ($validator->fails()) {
@@ -224,6 +225,49 @@ class GameController extends Controller {
       200
     );
 
+  }
+
+  public function startGame($game) {
+    if ($game->started) {
+      return Response::json(
+        array(
+          'error' => true,
+          'problem' => 'This game has already started',
+          'game' => $game->toArray(),
+	  'players' => $game->players()->toArray()
+        ),
+        400);
+    }
+    if ($game->players()->count() < 2) {
+      return Response::json(
+        array(
+          'error' => true,
+          'problem' => 'Game too small',
+          'game' => $game->toArray(),
+        ),
+        400);
+    }
+    $players = $game->players();
+    $ids = array();
+    foreach($players as $player) {
+      $ids[] = $player;
+    }
+    shuffle($ids);
+    $circleID = 1;
+    foreach($ids as $id) {
+      $player = Player::find($id);
+      $player->circleID = $circleID;
+      $circleID = $circleID + 1;
+      $player->save();
+    }
+    return Response::json(
+      array(
+	'error' => false,
+	'game' => $game->toArray(),
+	'players' => $game->players->toArray()
+      ),
+      200
+    );
   }
 
 }

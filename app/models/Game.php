@@ -8,7 +8,7 @@ class Game extends Eloquent {
   }
 
   public function players() {
-    return $this->hasMany('Player');
+    return $this->hasMany('Player', 'gameID');
   }
 }
 
