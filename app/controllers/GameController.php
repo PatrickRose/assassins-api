@@ -35,6 +35,7 @@ class GameController extends Controller {
     $player->water = Input::get('water');
     $player->address = Input::get('address');
     $player->gameID = $game->id;
+    $player->alive = true;
     $validator = Validator::make($player->toArray(), $player::$rules);
     if ($validator->fails()) {
       return Response::json(
@@ -131,8 +132,8 @@ class GameController extends Controller {
         );
       }
       $target = $player->findTarget()->toArray();
-      $target['picture'] = asset($game->id . '/' . $target->id . 'jpg');
-      $target = $target->id == $player->id ? false : $target;
+      $target['picture'] = asset('public/' . $game->id . '/' . $target['id'] . '.jpg');
+      $target = $target['id'] == $player->id ? false : $target;
       return Response::json(
         array(
           'error' => false,
@@ -161,7 +162,7 @@ class GameController extends Controller {
       );
     }
     if (Input::has('death')) {
-      $kill = Kill::where('killed', Input::get('player'));
+      $kill = Kill::where('killee', Input::get('player'));
       if (!$kill) {
         return Response::json(
           array(
@@ -187,7 +188,8 @@ class GameController extends Controller {
     if (Input::has('kill')) {
       $kill = new Kill();
       $kill->killer = Input::get('killer');
-      $kill->killed = Input::get('killed');
+      $kill->killee = Input::get('killed');
+      $kill->gameID = $game->id;
       $kill->confirmed = false;
       if ($kill->save()) {
         return Response::json(
@@ -234,7 +236,7 @@ class GameController extends Controller {
           'error' => true,
           'problem' => 'This game has already started',
           'game' => $game->toArray(),
-	  'players' => $game->players()->toArray()
+          'players' => $game->players->toArray()
         ),
         400);
     }
@@ -247,10 +249,10 @@ class GameController extends Controller {
         ),
         400);
     }
-    $players = $game->players();
+    $players = $game->players;
     $ids = array();
     foreach($players as $player) {
-      $ids[] = $player;
+      $ids[] = $player->id;
     }
     shuffle($ids);
     $circleID = 1;
@@ -258,13 +260,24 @@ class GameController extends Controller {
       $player = Player::find($id);
       $player->circleID = $circleID;
       $circleID = $circleID + 1;
-      $player->save();
+      if (!$player->save()) {
+        return Response::json(
+          array(
+            'error' => true,
+            'problem' => "Couldn't save player",
+            'player' => $player->toArray()
+          ),
+          200
+        );
+      }
     }
+    $game->started = true;
+    $game->save();
     return Response::json(
       array(
-	'error' => false,
-	'game' => $game->toArray(),
-	'players' => $game->players->toArray()
+        'error' => false,
+        'game' => $game->toArray(),
+        'players' => $game->players->toArray()
       ),
       200
     );

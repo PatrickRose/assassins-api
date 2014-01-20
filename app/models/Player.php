@@ -26,6 +26,15 @@ class Player extends Eloquent {
     return $this->belongsTo('Game', 'gameID');
   }
 
+  public function findTarget() {
+    $target = Player::where('circleID', '=', $this->circleID + 1)->where('gameID', '=', $this->gameID)->first();
+    if ($target) {
+      return $target->alive ? $target : $target->findTarget();
+    }
+    $target = Player::where('circleID', '=', 1)->where('gameID', '=', $this->gameID)->first();
+    return $target->alive ? $target : $target->findTarget();
+  }
+
 }
 
 ?>
