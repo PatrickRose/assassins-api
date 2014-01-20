@@ -92,7 +92,7 @@ class GameController extends Controller {
       );
     }
     if ($game->started) {
-      $events = $game->events->orderBy('createdAt', 'desc')->take(5)->get();
+      $events = $game->events->orderBy('createdAt', 'desc')->take(10)->get();
       return Response::json(
         array(
           'error' => false,
@@ -131,22 +131,35 @@ class GameController extends Controller {
           )
         );
       }
-      $target = $player->findTarget()->toArray();
-      $target['picture'] = asset('public/' . $game->id . '/' . $target['id'] . '.jpg');
-      $target = $target['id'] == $player->id ? false : $target;
+      if ($player->alive) {
+        $target = $player->findTarget()->toArray();
+        $target['picture'] = asset('public/' . $game->id . '/' . $target['id'] . '.jpg');
+        $target = $target['id'] == $player->id ? false : $target;
+        return Response::json(
+          array(
+            'error' => false,
+            'game' => $game->toArray(),
+            'target' => $target
+          ),
+          200
+        );
+      }
       return Response::json(
         array(
           'error' => false,
           'game' => $game->toArray(),
-          'target' => $target
-        )
+          'player' => $player->toArray(),
+          'target' => false,
+        ),
+        200
       );
     }
     return Response::json(
       array(
         'error' => false,
         'game' => $game->toArray()
-      )
+      ),
+      200
     );
   }
 
@@ -174,9 +187,14 @@ class GameController extends Controller {
       }
       $kill->confirmed = true;
       $kill->save();
-      $player = Player::find(Input::get('player'));
-      $player->alive = false;
-      $player->save();
+      $killed = Player::find(Input::get('player'));
+      $killed->alive = false;
+      $killed->save();
+      $killer = Player::find($kill->killer);
+      $event = new Event;
+      $event->game_id = $game->id;
+      $event->description = $killer->pseudonym . " killed " . $killed->pseudonym;
+      $event->save();
       return Response::json(
         array(
           'error' => false,
