@@ -92,11 +92,11 @@ class GameController extends Controller {
       );
     }
     if ($game->started) {
-      $events = $game->events->orderBy('createdAt', 'desc')->take(10)->get();
+      $events = DB::table('events')->where('game_id', '=', Input::get('gameID'))->orderBy('created_at', 'desc')->take(10)->get();
       return Response::json(
         array(
           'error' => false,
-          'events' => $events->toArray()
+          'events' => $events ? $events->toArray() : array()
         ),
         200
       );
@@ -132,6 +132,8 @@ class GameController extends Controller {
         );
       }
       if ($player->alive) {
+	$kill = Kill::where('gameID', $game->id)->where('killee', $player->id)->get();
+	$kill = $kill ? $kill->toArray() : false;
         $target = $player->findTarget()->toArray();
         $target['picture'] = asset('public/' . $game->id . '/' . $target['id'] . '.jpg');
         $target = $target['id'] == $player->id ? false : $target;
@@ -139,7 +141,8 @@ class GameController extends Controller {
           array(
             'error' => false,
             'game' => $game->toArray(),
-            'target' => $target
+            'target' => $target,
+	    'kill' => $kill	    
           ),
           200
         );
