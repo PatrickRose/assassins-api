@@ -22,6 +22,15 @@ class GameController extends Controller {
         401
       );
     }
+    if (!$game->started) {
+      return Response::json(
+	array(
+	  'error' => true,
+	  'problem' => "Game has already started",
+	),
+	400
+      );
+    }
     $player = new Player();
     //Player attributes
     // Pseudonym, Real Name, Course and department, Year,
@@ -216,6 +225,7 @@ class GameController extends Controller {
       $kill = new Kill();
       $kill->killer = Input::get('killer');
       $kill->killee = Input::get('killed');
+      $kill->description = Input::get('description');
       $kill->gameID = $game->id;
       $kill->confirmed = false;
       if ($kill->save()) {
