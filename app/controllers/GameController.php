@@ -133,16 +133,21 @@ class GameController extends Controller {
       }
       if ($player->alive) {
 	$kill = Kill::where('gameID', $game->id)->where('killee', $player->id)->get();
-	$kill = $kill ? $kill->toArray() : false;
+	$kill = $kill ? $kill->toArray() : null;
         $target = $player->findTarget()->toArray();
         $target['picture'] = asset('public/' . $game->id . '/' . $target['id'] . '.jpg');
-        $target = $target['id'] == $player->id ? false : $target;
+	if ($target['id'] == $player->id) {
+	  $game->started = false;
+	  $game->save();
+	}
         return Response::json(
           array(
             'error' => false,
             'game' => $game->toArray(),
             'target' => $target,
-	    'kill' => $kill	    
+	    'kill' => $kill,
+	    'events' => $game->events->toArray(),
+	    'player' => $player->toArray()
           ),
           200
         );
