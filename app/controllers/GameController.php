@@ -96,7 +96,7 @@ class GameController extends Controller {
       return Response::json(
         array(
           'error' => false,
-          'events' => $events ? $events->toArray() : array()
+          'events' => $events 
         ),
         200
       );
@@ -132,22 +132,23 @@ class GameController extends Controller {
         );
       }
       if ($player->alive) {
-	$kill = Kill::where('gameID', $game->id)->where('killee', $player->id)->get();
-	$kill = $kill ? $kill->toArray() : null;
+        $kill = Kill::where('gameID', $game->id)->where('killee', $player->id)->get();
+        $kill = $kill ? $kill->toArray() : null;
         $target = $player->findTarget()->toArray();
         $target['picture'] = asset('public/' . $game->id . '/' . $target['id'] . '.jpg');
-	if ($target['id'] == $player->id) {
-	  $game->started = false;
-	  $game->save();
-	}
+        if ($target['id'] == $player->id) {
+          $game->started = false;
+          $game->save();
+        }
+        $events = DB::table('events')->where('game_id', '=', Input::get('gameID'))->orderBy('created_at', 'desc')->take(10)->get();
         return Response::json(
           array(
             'error' => false,
             'game' => $game->toArray(),
             'target' => $target,
-	    'kill' => $kill,
-	    'events' => $game->events->toArray(),
-	    'player' => $player->toArray()
+            'kill' => $kill,
+            'events' => $events,
+            'player' => $player->toArray()
           ),
           200
         );
@@ -183,7 +184,7 @@ class GameController extends Controller {
       );
     }
     if (Input::has('death')) {
-      $kill = Kill::where('killee', Input::get('player'));
+      $kill = Kill::where('killed', Input::get('player'));
       if (!$kill) {
         return Response::json(
           array(
@@ -199,9 +200,9 @@ class GameController extends Controller {
       $killed->alive = false;
       $killed->save();
       $killer = Player::find($kill->killer);
-      $event = new Event;
+      $event = new ApiEvent;
       $event->game_id = $game->id;
-      $event->description = $killer->pseudonym . " killed " . $killed->pseudonym;
+      $event->description = $killer->pseudonym . " killed " . $killed->pseudonym . ": " . $kill->description;
       $event->save();
       return Response::json(
         array(
