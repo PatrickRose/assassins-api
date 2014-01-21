@@ -22,7 +22,7 @@ class GameController extends Controller {
         401
       );
     }
-    if (!$game->started) {
+    if ($game->started) {
       return Response::json(
 	array(
 	  'error' => true,
