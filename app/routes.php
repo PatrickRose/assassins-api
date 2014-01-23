@@ -21,6 +21,9 @@ Route::model('game', 'Game');
 Route::get('start/{game}',
 	   array('uses' => 'GameController@startGame'));
 
+Route::get('event/create', 'EventsController@create');
+Route::post('event', 'EventsController@save');
+
 Route::group(array('prefix' => 'api',
                    'before' => 'secretKey'),
              function() {

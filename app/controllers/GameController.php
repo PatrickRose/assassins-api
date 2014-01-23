@@ -24,11 +24,11 @@ class GameController extends Controller {
     }
     if ($game->started) {
       return Response::json(
-	array(
-	  'error' => true,
-	  'problem' => "Game has already started",
-	),
-	400
+        array(
+          'error' => true,
+          'problem' => "Game has already started",
+        ),
+        400
       );
     }
     $player = new Player();
@@ -45,6 +45,7 @@ class GameController extends Controller {
     $player->address = Input::get('address');
     $player->gameID = $game->id;
     $player->alive = true;
+
     $validator = Validator::make($player->toArray(), $player::$rules);
     if ($validator->fails()) {
       return Response::json(
@@ -105,7 +106,7 @@ class GameController extends Controller {
       return Response::json(
         array(
           'error' => false,
-          'events' => $events 
+          'events' => $events
         ),
         200
       );
@@ -141,23 +142,27 @@ class GameController extends Controller {
         );
       }
       if ($player->alive) {
-        $kill = Kill::where('gameID', $game->id)->where('killee', $player->id)->get();
-        $kill = $kill ? $kill->toArray() : null;
+        $kills = Kill::where('gameID', $game->id)->where('killee', $player->id)->get();
+	foreach($kills as $kill) {
+	  $kill->pseudonym = Player::find($kill['killer'])->pseudonym;
+	}
         $target = $player->findTarget()->toArray();
         $target['picture'] = asset('public/' . $game->id . '/' . $target['id'] . '.jpg');
         if ($target['id'] == $player->id) {
           $game->started = false;
           $game->save();
         }
+	$messages = ApiMessage::where('game_id', $game->id)->where('reciever', $player->id)->where('read', false)->get();
         $events = DB::table('events')->where('game_id', '=', Input::get('gameID'))->orderBy('created_at', 'desc')->take(10)->get();
         return Response::json(
           array(
             'error' => false,
             'game' => $game->toArray(),
             'target' => $target,
-            'kill' => $kill,
+            'kill' => $kills->toArray(),
             'events' => $events,
-            'player' => $player->toArray()
+            'player' => $player->toArray(),
+	    'messages' => $messages
           ),
           200
         );
@@ -193,7 +198,7 @@ class GameController extends Controller {
       );
     }
     if (Input::has('death')) {
-      $kill = Kill::where('killed', Input::get('player'));
+      $kill = Kill::where('killee', Input::get('player'))->where('killer', Input::get('killer'))->get();
       if (!$kill) {
         return Response::json(
           array(
@@ -217,6 +222,23 @@ class GameController extends Controller {
         array(
           'error' => false,
           'kill' => $kill->toArray()
+        ),
+        200
+      );
+    }
+    if (Input::has('delete')) {
+      $kill = Kill::where('killee', Input::get('player'))->where('killer', Input::get('killer'))->get();
+      $kill->delete();
+      $message = new ApiMessage;
+      $message->game_id = $game->id;
+      $message->reciever = Input::get('killer');
+      $player = Player::find(Input::get('player'));
+      $message->message = "KILL REPORT DENIED. " . $player->pseudonym . " disagreed that they were dead";
+      $message->save();
+      return Response::json(
+        array(
+          'error' => false,
+          'message' => $message->toArray()
         ),
         200
       );
