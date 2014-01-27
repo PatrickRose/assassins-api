@@ -21,7 +21,7 @@
         {{ link_to('messages', "Create/View a message") }}
       </li>
       <li>
-	{{ link_to('games/create', "Create a game") }}
+	{{ link_to('createGame', "Create a game") }}
       </li>
     </ul>
 
