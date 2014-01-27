@@ -20,7 +20,8 @@ class PlayerController extends BaseController {
       return Response::json(
         array(
           'error' => true,
-          'problem' => "You haven't created a player yet",
+          'message' => "You haven't created a player yet",
+          'user' => Auth::user()->toArray()
         ),
         200
       );
@@ -34,6 +35,23 @@ class PlayerController extends BaseController {
     );
   }
 
+  public function create() {
+    return View::make('players.create');
+  }
+
+  public function save() {
+    $user = new User;
+    $user->email = Input::get('email');
+    $user->password = Hash::make(Input::get('password'));
+    if ($user->save()) {
+      return Redirect::to('createUser')->with('msg', "User created!");
+    }
+    return Redirect::to('createUser')->with('msg', "User not created!");
+
+  }
+
+
 }
+
 
 ?>

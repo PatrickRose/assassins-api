@@ -15,7 +15,8 @@ class Player extends Eloquent {
     'allergies'  => 'required',
     'water'      => 'required',
     'gameID'     => 'required',
-    'address'    => 'required'
+    'address'    => 'required',
+    'user_id'    => 'required'
   );
 
   public function user() {

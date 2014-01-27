@@ -19,10 +19,21 @@ Route::get('/', function()
 Route::model('game', 'Game');
 
 Route::get('start/{game}',
-	   array('uses' => 'GameController@startGame'));
+           array('uses' => 'GameController@startGame'));
+Route::get('game/{game}', 'GameController@showGameInfo');
 
 Route::get('event/create', 'EventsController@create');
 Route::post('event', 'EventsController@save');
+
+Route::get('createUser', 'PlayerController@create');
+Route::post('createUser', 'PlayerController@save');
+
+Route::get('messages', 'MessagesController@index');
+Route::get('messages/{gameID}', 'MessagesController@forGame');
+Route::post('messages/{gameID}', 'MessagesController@save');
+
+Route::get('createGame', 'GameController@create');
+Route::post('createGame', 'GameController@save');
 
 Route::group(array('prefix' => 'api',
                    'before' => 'secretKey'),
@@ -41,9 +52,14 @@ Route::group(array('prefix' => 'api',
                 array('uses' => 'GameController@getEvents'));
 
     Route::post('login',
-		array('uses' => 'PlayerController@login'));
+                array('uses' => 'PlayerController@login'));
 
     Route::post('getAllGames',
-		array('uses' => 'GameController@getAll'));
+                array('uses' => 'GameController@getAll'));
+
+    Route::post('messageAdmin', 'GameController@messageAdmin');
+
+    Route::post('leaveGame', 'GameController@leaveGame');
+
 
   });
