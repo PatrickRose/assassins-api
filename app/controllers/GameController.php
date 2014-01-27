@@ -429,6 +429,21 @@ class GameController extends Controller {
 
   }
 
+  public function create() {
+    return View::make('game.create');
+  }
+
+  public function save() {
+    $game = new Game;
+    $game->password = Input::get('password');
+    if($game->save()) {
+      return Redirect::to('createGame')->with(array('msg' => 'Did it!'));
+    } else {
+      return Redirect::to('createGame')->with(array('msg' => 'Didn\'t it!'));
+    }
+
+  }
+
 }
 
 ?>
